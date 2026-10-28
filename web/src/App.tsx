@@ -27,11 +27,16 @@ const toolNames: Record<string, string> = { leer_solicitud: 'Solicitud leída', 
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, options)
+  const contentType = response.headers.get('content-type') ?? ''
   if (!response.ok) {
     let message = 'No se pudo conectar con el servicio. Intenta nuevamente.'
-    try { const body = await response.json() as { error?: string }; if (body.error) message = body.error } catch { }
+    if (contentType.includes('application/json')) {
+      const body = await response.json() as { error?: string }
+      if (body.error) message = body.error
+    }
     throw new Error(message)
   }
+  if (!contentType.includes('application/json')) throw new Error('La ruta API respondió una página HTML. Verifica el enrutamiento de Vercel.')
   return response.json() as Promise<T>
 }
 
