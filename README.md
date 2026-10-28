@@ -8,11 +8,10 @@ Node.js 20 o superior.
 
 ```bash
 npm install
-npm --prefix web install
 npm run dev
 ```
 
-El frontend queda en `http://127.0.0.1:5173` y usa el API local en `http://127.0.0.1:3000` mediante proxy de Vite. Es el único comando de desarrollo necesario después de instalar dependencias.
+La aplicación Next.js queda en `http://127.0.0.1:3000`, incluyendo interfaz y API App Router. Es el único comando de desarrollo necesario después de instalar dependencias.
 
 ## Variables
 
@@ -42,8 +41,8 @@ La confirmación se acepta únicamente con el mensaje exacto `Confirmar simulaci
 
 ## Arquitectura
 
-React/Vite y componentes instalados de shadcn/ui consumen una API Hono. `src/agent.ts` separa el ciclo del adaptador Claude con SDK oficial de Anthropic (`src/llm/claude.ts`) y de las herramientas deterministas (`src/tools/proveedor.ts`). El comportamiento vive en `agent/prompt.md` y las reglas en `src/knowledge/registro-proveedor.md`.
+Next.js App Router entrega la interfaz React y las rutas API Node. `src/agent.ts` separa el ciclo del adaptador Claude con SDK oficial de Anthropic (`src/llm/claude.ts`) y de las herramientas deterministas (`src/tools/proveedor.ts`). El comportamiento vive en `agent/prompt.md` y las reglas en `src/knowledge/registro-proveedor.md`.
 
 ## Despliegue
 
-No se realizó despliegue público. El link de prueba es local: `http://127.0.0.1:5173` durante `npm run dev`. Para la entrega final, el repositorio o ZIP debe excluir `node_modules/`, `web/node_modules/`, `out/` y `.env`.
+No se realizó despliegue público. El link de prueba es local: `http://127.0.0.1:3000` durante `npm run dev`. Para la entrega final, el repositorio o ZIP debe excluir `node_modules/`, `.next/`, `out/` y `.env`.

@@ -1,13 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { z } from 'zod'
 import { armar_paquete, generar_formulario, leer_solicitud, mapear_campos, simular_envio } from './tools/proveedor.ts'
 import { confirmText, slug, toolResponse, type ChatReply, type PublicCall } from './contracts.ts'
 import type { ChatMessage, LlmAdapter, ToolDefinition } from './llm/adapter.ts'
 
-const sourceDirectory = resolve(fileURLToPath(new URL('..', import.meta.url)))
-export const directory = process.env.VERCEL ? process.cwd() : sourceDirectory
+export const directory = process.cwd()
 type Session = { history: Array<{ role: 'user' | 'assistant'; content: string }>; modelHistory: ChatMessage[]; pending: string | null; selected: string | null; tokens: number; last: ChatReply | null }
 const sessions = new Map<string, Session>()
 const tools = { leer_solicitud, mapear_campos, generar_formulario, armar_paquete }

@@ -1,4 +1,5 @@
 node_modules/
+.next/
 web/node_modules/
 web/dist/
 dist/

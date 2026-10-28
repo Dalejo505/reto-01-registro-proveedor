@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Activity, ArrowDownToLine, ArrowRight, Check, CheckCircle2, ChevronRight, CircleAlert, FileText, FolderOpen, LayoutPanelLeft, LoaderCircle, Menu, MessageSquareText, Plus, Send, ShieldCheck, Sparkles, X } from 'lucide-react'
 import { toast } from 'sonner'
@@ -61,7 +63,7 @@ export default function App() {
   const [cases, setCases] = useState<Case[]>([])
   const [casesLoading, setCasesLoading] = useState(true)
   const [casesError, setCasesError] = useState('')
-  const [sessionId, setSessionId] = useState(() => { const candidate = new URLSearchParams(window.location.search).get('session'); return candidate && /^[A-Za-z0-9_-]{1,100}$/.test(candidate) ? candidate : crypto.randomUUID() })
+  const [sessionId, setSessionId] = useState('')
   const [selectedCase, setSelectedCase] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [last, setLast] = useState<Reply | null>(null)
@@ -74,11 +76,16 @@ export default function App() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const activeRequest = useRef<AbortController | null>(null)
   useEffect(() => {
+    const candidate = new URLSearchParams(window.location.search).get('session')
+    setSessionId(candidate && /^[A-Za-z0-9_-]{1,100}$/.test(candidate) ? candidate : crypto.randomUUID())
+  }, [])
+  useEffect(() => {
     let active = true
     request<{ cases: Case[] }>('/api/cases').then(data => { if (active) setCases(data.cases) }).catch((reason: Error) => { if (active) setCasesError(reason.message) }).finally(() => { if (active) setCasesLoading(false) })
     return () => { active = false }
   }, [])
   useEffect(() => {
+    if (!sessionId) return
     let active = true
     request<Session>(`/api/sessions/${sessionId}`).then(data => {
       if (!active) return
@@ -107,7 +114,7 @@ export default function App() {
 
   async function send(message: string) {
     const content = message.trim()
-    if (!content || busy || content.length > 4000) return
+    if (!sessionId || !content || busy || content.length > 4000) return
     const controller = new AbortController()
     activeRequest.current = controller
     setBusy(true)

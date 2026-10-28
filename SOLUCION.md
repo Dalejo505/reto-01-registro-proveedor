@@ -8,7 +8,7 @@ La analista administrativa repite transcripciones de alto riesgo y búsqueda de 
 
 ```mermaid
 flowchart LR
-  UI[React + shadcn/ui] --> API[Hono API]
+  UI[Next.js + React + shadcn/ui] --> API[Next App Router]
   API --> Agent[Ciclo del agente]
   Agent --> LLM[Adaptador Anthropic SDK]
   Agent --> Tools[Herramientas Zod]
