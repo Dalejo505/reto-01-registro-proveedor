@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "workspaces": ["web"],
   "scripts": {
-    "dev": "concurrently -k -n api,web \"tsx watch src/server.ts\" \"npm --prefix web run dev\"",
+    "dev": "concurrently -k -n api,web \"tsx watch src/server.ts\" \"npm run dev --workspace reto-01-web\"",
     "demo": "tsx demo.ts",
     "test": "tsx --test src/tools/proveedor.test.ts",
-    "typecheck": "tsc --noEmit && npm --prefix web run typecheck",
-    "lint": "eslint src demo.ts && npm --prefix web run typecheck",
-    "build": "npm run typecheck && npm --prefix web run build",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspace reto-01-web",
+    "lint": "eslint src demo.ts && npm run typecheck --workspace reto-01-web",
+    "build": "npm run typecheck && npm run build --workspace reto-01-web",
     "start": "tsx src/server.ts"
   },
   "dependencies": {

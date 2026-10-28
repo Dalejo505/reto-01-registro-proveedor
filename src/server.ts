@@ -62,5 +62,5 @@ app.get('/api/download/:caso/:file', async c => {
   } catch { return c.json({ error: 'Archivo no disponible' }, 404) }
 })
 
-serve({ fetch: app.fetch, port: Number(process.env.PORT || 3000), hostname: process.env.HOST || '127.0.0.1' })
+if (!process.env.VERCEL) serve({ fetch: app.fetch, port: Number(process.env.PORT || 3000), hostname: process.env.HOST || '127.0.0.1' })
 export default app
