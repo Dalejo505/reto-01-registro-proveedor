@@ -50,7 +50,7 @@ const sendArgs = { caso: caseArgs.caso, confirmado: z.boolean().describe('Confir
 const readJson = async (path: string): Promise<unknown> => JSON.parse(await readFile(path, 'utf8'))
 const root = (ctx: ToolContext) => resolve(ctx.directory)
 const casePath = (ctx: ToolContext, caso: string) => join(root(ctx), 'casos', slug.parse(caso))
-const outPath = (ctx: ToolContext, caso: string) => join(root(ctx), 'out', slug.parse(caso))
+const outPath = (ctx: ToolContext, caso: string) => join(process.env.VERCEL ? '/tmp' : root(ctx), 'out', slug.parse(caso))
 const safeMessage = (error: unknown) => error instanceof z.ZodError ? 'datos de entrada o fixture inválidos' : error instanceof Error && error.message.startsWith('regla:') ? error.message.slice(6) : 'no fue posible completar la operación'
 const toolName = (name: string) => `proveedor_${name}`
 

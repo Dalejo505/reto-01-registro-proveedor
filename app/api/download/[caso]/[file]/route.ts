@@ -12,7 +12,7 @@ export async function GET(_request: Request, context: { params: Promise<{ caso: 
   const { caso: rawCase, file } = await context.params
   const caso = slug.safeParse(rawCase)
   if (!caso.success || !allowed.includes(file)) return NextResponse.json({ error: 'Archivo no disponible' }, { status: 404 })
-  const base = resolve(process.cwd(), 'out', caso.data)
+  const base = resolve(process.env.VERCEL ? '/tmp' : process.cwd(), 'out', caso.data)
   const target = resolve(base, ['checklist.md', 'borrador-correo.md'].includes(file) ? join('paquete', file) : file)
   try {
     const actual = await realpath(target)
