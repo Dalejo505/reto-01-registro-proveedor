@@ -5,6 +5,7 @@
   "outputDirectory": "dist",
   "functions": {
     "api/[...path].ts": {
+      "runtime": "nodejs22.x",
       "includeFiles": "{casos/**,repositorio/**,glosario-campos.json,agent/**,src/knowledge/**}"
     }
   },
