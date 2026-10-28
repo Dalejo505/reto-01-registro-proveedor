@@ -6,7 +6,8 @@ import { armar_paquete, generar_formulario, leer_solicitud, mapear_campos, simul
 import { confirmText, slug, toolResponse, type ChatReply, type PublicCall } from './contracts.ts'
 import type { ChatMessage, LlmAdapter, ToolDefinition } from './llm/adapter.ts'
 
-export const directory = resolve(fileURLToPath(new URL('..', import.meta.url)))
+const sourceDirectory = resolve(fileURLToPath(new URL('..', import.meta.url)))
+export const directory = process.env.VERCEL ? process.cwd() : sourceDirectory
 type Session = { history: Array<{ role: 'user' | 'assistant'; content: string }>; modelHistory: ChatMessage[]; pending: string | null; selected: string | null; tokens: number; last: ChatReply | null }
 const sessions = new Map<string, Session>()
 const tools = { leer_solicitud, mapear_campos, generar_formulario, armar_paquete }
