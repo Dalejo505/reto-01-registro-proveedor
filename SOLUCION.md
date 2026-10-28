@@ -4,6 +4,17 @@
 
 La analista administrativa repite transcripciones de alto riesgo y búsqueda de soportes para registrar a Periferia como proveedor ante distintos clientes.
 
+## Entregables del repositorio
+
+| Entregable | Evidencia |
+|---|---|
+| Código TypeScript | `src/`, `app/` y `agent/`; Next.js App Router, herramientas Zod y adaptador Anthropic. |
+| Demo determinista | `demo.ts`; procesa todos los casos sin LLM ni API key. |
+| Documento técnico | Este archivo, `SOLUCION.md`. |
+| Fixtures intactos | `casos/`, `repositorio/` y `glosario-campos.json`; no se escriben durante el flujo. |
+
+Despliegue: [https://reto-01-registro-proveedor.vercel.app](https://reto-01-registro-proveedor.vercel.app).
+
 ## Arquitectura
 
 ```mermaid
@@ -13,7 +24,7 @@ flowchart LR
   Agent --> LLM[Adaptador Anthropic SDK]
   Agent --> Tools[Herramientas Zod]
   Tools --> Fixtures[casos y repositorio · solo lectura]
-  Tools --> Out[out/caso · escritura]
+  Tools --> Out[out/caso local · /tmp/out en Vercel]
   Agent -. comportamiento .-> Prompt[agent/prompt.md]
   Agent -. conocimiento .-> Knowledge[src/knowledge]
 ```
