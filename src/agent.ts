@@ -80,6 +80,10 @@ export async function chat(id: string, message: string, adapter: LlmAdapter | nu
     return response
   }
   const cases = await listCases()
+  if (session.pending && /^(no\s+confirm|cancelar|seguir\s+revisando|rechazar)/i.test(message.trim())) {
+    session.pending = null
+    return finish({ reply: 'Simulación descartada. El paquete queda preparado para revisión; no se envió ningún correo.', toolCalls: [], needsConfirmation: false, ...(session.last?.summary ? { summary: session.last.summary } : {}), ...(session.last?.files ? { files: session.last.files } : {}) })
+  }
   if (session.pending && message === confirmText) {
     const caso = session.pending
     session.pending = null
