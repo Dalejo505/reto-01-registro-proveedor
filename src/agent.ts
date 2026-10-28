@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { z } from 'zod'
+import { projectRoot } from './project-root.ts'
 import { armar_paquete, generar_formulario, leer_solicitud, mapear_campos, simular_envio } from './tools/proveedor.ts'
 import { confirmText, slug, toolResponse, type ChatReply, type PublicCall } from './contracts.ts'
 import type { ChatMessage, LlmAdapter, ToolDefinition } from './llm/adapter.ts'
@@ -30,7 +31,8 @@ const urls = (caso: string, data: Record<string, unknown>) => {
 }
 
 export async function listCases(): Promise<string[]> {
-  return (await readdir(join(directory, 'casos'), { withFileTypes: true })).filter(entry => entry.isDirectory() && slug.safeParse(entry.name).success).map(entry => entry.name).sort()
+  const root = await projectRoot()
+  return (await readdir(join(root, 'casos'), { withFileTypes: true })).filter(entry => entry.isDirectory() && slug.safeParse(entry.name).success).map(entry => entry.name).sort()
 }
 
 export function getSession(id: string) {
@@ -39,16 +41,17 @@ export function getSession(id: string) {
 }
 
 async function invoke(name: ToolName | 'simular_envio', caso: string, id: string, confirmed = false, prior?: Record<string, unknown>) {
+  const root = await projectRoot()
   let raw: string
-  if (name === 'simular_envio') raw = await simular_envio.execute({ caso, confirmado: true }, { directory, sessionId: id, ...(confirmed ? { confirmedCase: caso } : {}) })
+  if (name === 'simular_envio') raw = await simular_envio.execute({ caso, confirmado: true }, { directory: root, sessionId: id, ...(confirmed ? { confirmedCase: caso } : {}) })
   else if (name === 'mapear_campos') {
     const campos = Array.isArray(prior?.campos) ? prior.campos.filter((item): item is string => typeof item === 'string') : []
-    raw = await mapear_campos.execute({ caso, campos }, { directory, sessionId: id })
+    raw = await mapear_campos.execute({ caso, campos }, { directory: root, sessionId: id })
   } else if (name === 'generar_formulario') {
     if (!prior) throw new Error('Mapeo requerido')
-    raw = await generar_formulario.execute({ caso, mapeo: prior as never }, { directory, sessionId: id })
-  } else if (name === 'leer_solicitud') raw = await leer_solicitud.execute({ caso }, { directory, sessionId: id })
-  else raw = await armar_paquete.execute({ caso }, { directory, sessionId: id })
+    raw = await generar_formulario.execute({ caso, mapeo: prior as never }, { directory: root, sessionId: id })
+  } else if (name === 'leer_solicitud') raw = await leer_solicitud.execute({ caso }, { directory: root, sessionId: id })
+  else raw = await armar_paquete.execute({ caso }, { directory: root, sessionId: id })
   const result = toolResponse.parse(JSON.parse(raw))
   if (!result.ok) throw new Error(result.error)
   if (!result.data || typeof result.data !== 'object' || Array.isArray(result.data)) throw new Error('Respuesta de herramienta inválida')
@@ -140,8 +143,9 @@ export async function chat(id: string, message: string, adapter: LlmAdapter | nu
   if (!adapter) return deterministic('Modo sin clave LLM: procesamiento local determinista. ')
   try {
     if (session.tokens >= sessionTokenBudget) return finish({ reply: 'Límite de tokens de esta sesión alcanzado. Inicia otra sesión.', toolCalls: [], needsConfirmation: false })
-    const prompt = await readFile(join(directory, 'agent', 'prompt.md'), 'utf8')
-    const knowledge = await readFile(join(directory, 'src', 'knowledge', 'registro-proveedor.md'), 'utf8')
+    const root = await projectRoot()
+    const prompt = await readFile(join(root, 'agent', 'prompt.md'), 'utf8')
+    const knowledge = await readFile(join(root, 'src', 'knowledge', 'registro-proveedor.md'), 'utf8')
     const context: ChatMessage[] = [{ role: 'system', content: `${prompt}\n${knowledge}\nCasos permitidos: ${cases.join(', ')}. Caso seleccionado: ${selected}. No pidas ni reveles valores sensibles. No simules envíos.` }, ...session.modelHistory, { role: 'user', content: message }]
     let callCount = 0
     for (let turn = 0; turn < maxToolIterations; turn++) {
