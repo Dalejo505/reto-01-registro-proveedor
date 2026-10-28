@@ -1,0 +1,35 @@
+/* PENDIENTE_VALIDAR_CON_BRANDBOOK_PERIFERIA */
+:root {
+  --brand-primary: #0B2B40;
+  --brand-action: #1479C9;
+  --brand-accent: #18A6A6;
+  --brand-surface: #F6F9FC;
+  --brand-ink: #17212B;
+  --background: #ffffff;
+  --foreground: var(--brand-ink);
+  --card: #ffffff;
+  --card-foreground: var(--brand-ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--brand-ink);
+  --primary: var(--brand-primary);
+  --primary-foreground: #ffffff;
+  --secondary: var(--brand-surface);
+  --secondary-foreground: var(--brand-primary);
+  --muted: var(--brand-surface);
+  --muted-foreground: #60717f;
+  --accent: #e7f7f7;
+  --accent-foreground: var(--brand-primary);
+  --destructive: #af3045;
+  --border: #dce6ec;
+  --input: #dce6ec;
+  --ring: var(--brand-action);
+  --radius: 0.75rem;
+  --sidebar: var(--brand-primary);
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: var(--brand-action);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #174057;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #345568;
+  --sidebar-ring: var(--brand-accent);
+}
