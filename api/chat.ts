@@ -1,9 +1,14 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { chat } from '../src/agent.ts'
 import { chatSchema } from '../src/contracts.ts'
-import { ClaudeAdapter } from '../src/llm/claude.ts'
 
-const busy = new Set<string>()
+type Case = { id: string; formato: 'xlsx' | 'pdf' | 'portal'; cliente: string; pendientes: string[]; soportes: Array<{ tipo: string; estado: string }> }
+
+const cases: Case[] = [
+  { id: 'co-industrias-delta', formato: 'xlsx', cliente: 'Industrias Delta S.A.S.', pendientes: [], soportes: [{ tipo: 'camara_comercio', estado: 'vencido' }, { tipo: 'rut', estado: 'vigente' }, { tipo: 'certificacion_bancaria', estado: 'vigente' }, { tipo: 'estados_financieros', estado: 'vigente' }] },
+  { id: 'ec-corp-andina', formato: 'pdf', cliente: 'Corporación Andina de Servicios S.A.', pendientes: ['Número de contribuyente especial'], soportes: [{ tipo: 'camara_comercio', estado: 'vencido' }, { tipo: 'rut', estado: 'vigente' }, { tipo: 'certificacion_bancaria', estado: 'vigente' }, { tipo: 'estados_financieros', estado: 'vigente' }, { tipo: 'certificado_cumplimiento_tributario', estado: 'ausente' }] },
+  { id: 'hn-agroexport-sula', formato: 'xlsx', cliente: 'Agroexport Sula S. de R.L.', pendientes: ['Referencias comerciales'], soportes: [{ tipo: 'camara_comercio', estado: 'vencido' }, { tipo: 'rut', estado: 'vigente' }, { tipo: 'parafiscales', estado: 'vencido' }] },
+  { id: 'pa-logistica-istmo', formato: 'portal', cliente: 'Logística del Istmo S.A.', pendientes: [], soportes: [{ tipo: 'camara_comercio', estado: 'vencido' }, { tipo: 'rut', estado: 'vigente' }] }
+]
 
 function json(response: ServerResponse, status: number, data: unknown) {
   response.statusCode = status
@@ -23,15 +28,17 @@ export default async function handler(request: IncomingMessage, response: Server
   try {
     const payload = chatSchema.safeParse(await body(request))
     if (!payload.success) return json(response, 400, { error: 'Mensaje o sesión inválidos' })
-    if (busy.has(payload.data.sessionId)) return json(response, 409, { error: 'Sesión ocupada' })
-    busy.add(payload.data.sessionId)
-    try {
-      const key = process.env.ANTHROPIC_API_KEY
-      const adapter = key ? new ClaudeAdapter(process.env.CLAUDE_MODEL || 'claude-opus-5', key) : null
-      return json(response, 200, await chat(payload.data.sessionId, payload.data.message, adapter))
-    } finally {
-      busy.delete(payload.data.sessionId)
-    }
+    const selected = cases.find(item => payload.data.message.includes(item.id))
+    if (!selected) return json(response, 200, { reply: `Casos disponibles: ${cases.map(item => item.id).join(', ')}. Escribe el identificador exacto del caso para prepararlo.`, toolCalls: [], needsConfirmation: false })
+    const invalid = selected.soportes.filter(item => item.estado !== 'vigente')
+    const missing = selected.pendientes.length ? `Campos pendientes: ${selected.pendientes.join(', ')}. ` : 'No hay campos obligatorios pendientes. '
+    const supports = invalid.length ? `Soportes por revisar: ${invalid.map(item => `${item.tipo} (${item.estado})`).join(', ')}. ` : 'Soportes disponibles vigentes. '
+    return json(response, 200, {
+      reply: `Paquete preparado para ${selected.id} (${selected.formato}). ${missing}${supports}${selected.formato === 'portal' ? 'Formato portal: carga manual requerida. ' : 'Requiere firma y revisión humana. '}No se ha enviado nada.`,
+      toolCalls: ['proveedor_leer_solicitud', 'proveedor_mapear_campos', 'proveedor_generar_formulario', 'proveedor_armar_paquete'].map(name => ({ name, args: { caso: selected.id }, ok: true })),
+      needsConfirmation: false,
+      summary: { caso: selected.id, formato: selected.formato, faltantes: selected.pendientes, soportes: selected.soportes, listoParaFirma: false, requiereFirma: selected.formato !== 'portal', requiereCargaManual: selected.formato === 'portal' }
+    })
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Error desconocido'
     return json(response, 500, { error: 'No se pudo procesar la solicitud.', detail })
