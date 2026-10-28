@@ -6,12 +6,16 @@
   "functions": {
     "api/[...path].ts": {
       "includeFiles": "{casos/**,repositorio/**,glosario-campos.json,agent/**,src/knowledge/**}"
+    },
+    "api/chat.ts": {
+      "includeFiles": "{casos/**,repositorio/**,glosario-campos.json,agent/**,src/**}"
     }
   },
   "routes": [
     { "src": "/api/health", "dest": "/api/health.ts" },
     { "src": "/api/cases", "dest": "/api/cases.ts" },
     { "src": "/api/sessions/([^/]+)", "dest": "/api/sessions/[id].ts" },
+    { "src": "/api/chat", "dest": "/api/chat.ts" },
     { "src": "/api/(.*)", "dest": "/api/[...path].ts" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
