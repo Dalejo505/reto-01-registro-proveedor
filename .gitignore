@@ -3,5 +3,6 @@ web/node_modules/
 web/dist/
 dist/
 out/
+.vercel/
 .env
 *.log
